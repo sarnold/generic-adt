@@ -12,10 +12,8 @@
 -- of a stack is defined by the exported data type Stack_Type.
 ----------------------------------------------------------------------------
 
---with Dynamic_List_Manager ;
-
 with Ada.Exceptions ;
--- with Ada.Unchecked_Deallocation ;
+
 package body Stack_Manager is
 
    -------------------------------------------------------------------------
@@ -27,7 +25,6 @@ package body Stack_Manager is
    --   Overflow    Item could not be added to S.
 
    begin -- Push
-      LM.Move(S.List, LM.At_Start) ;
       LM.Insert(Item, S.List) ;
       exception
          when LM.Overflow =>
@@ -62,7 +59,7 @@ package body Stack_Manager is
    -- Exceptions:
    --   Underflow    Stack is empty.
 
-   begin --Pop
+   begin --Top
       if LM.Empty(S.List) then
          Ada.Exceptions.Raise_Exception (Underflow'identity,
                      "Error using Top.  Stack is empty.") ;
