@@ -4,7 +4,7 @@
 -- CS152, Spring 2000
 -- Assignment Stack & Queue Packages (Dynamic_List_Manager Implementation)
 -- Stephen L Arnold
--- procedure body Satck_Test
+-- procedure body Stack_Test
 ----------------------------------------------------------------------------
 -- Description: This procedure tests the Stack package.
 --
