@@ -10,7 +10,8 @@
 --  "chunk") phase, followed by a merge phase, to sort a large disk file.
 --
 --  You can enter an input filename on the command line, or the program
---  will prompt you for the name.
+--  will prompt you for the name.  Output is written to the filename
+--  'output.dat' so make sure your input file has a different name.
 -----------------------------------------------------------------------------
 
 with Ada.Command_Line;              use Ada.Command_Line;
@@ -239,6 +240,9 @@ begin --Merge_Sort
    end loop;
    Delete(Temp_File1);
    Close(Output_File);
+   exception
+      when Name_Error =>
+         Put_Line("Specified filename does not exist");
 end Merge_Sort;
 
 
