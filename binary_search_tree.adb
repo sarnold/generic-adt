@@ -39,13 +39,25 @@ package body Binary_Search_Tree is
       Target   : Tree_Node_Ptr := Tree.Root;
 
    begin -- Insert
+
       if Tree.Traversing then
          Ada.Exceptions.Raise_Exception (State_Error'identity,
                          "Error using Insert.  Tree is already in a traversal.");
-      elsif Exists(Key(Item), Tree) then
-         Ada.Exceptions.Raise_Exception (Key_Error'identity,
-                         "Error using Insert.  Key already exists.");
       end if;
+
+      -- Find the insert spot.
+      while Target /= null loop
+         Parent := Target;
+         if Key(Item) = Key(Target.Data) then
+            Ada.Exceptions.Raise_Exception (Key_Error'identity,
+                            "Error using Insert.  Key already exists.");
+         elsif Key(Item) < Key(Target.Data) then
+            Target := Target.Child(Left);
+         else
+            Target := Target.Child(Right);
+         end if;
+      end loop;
+
       begin
          New_Item := new Tree_Node'(Item, (others => null));
       exception
@@ -53,15 +65,7 @@ package body Binary_Search_Tree is
             Ada.Exceptions.Raise_Exception (Overflow'identity,
                          "Error using Insert.  Not eneough free memory.");
       end;
-      -- Find the insert spot.
-      while Target /= null loop
-         Parent := Target;
-         if Key(Item) < Key(Target.Data) then
-            Target := Target.Child(Left);
-         else
-            Target := Target.Child(Right);
-         end if;
-      end loop;
+
       -- Insert new item
       if Parent = null then
          Tree.Root := New_Item;
@@ -85,49 +89,56 @@ package body Binary_Search_Tree is
       Original : Tree_Node_Ptr := null;
       Parent   : Tree_Node_Ptr := null;
       Target   : Tree_Node_Ptr := Tree.Root;
+      Name     : Child_Name;
 
    begin -- Remove
       if Tree.Traversing then
          Ada.Exceptions.Raise_Exception (State_Error'identity,
                          "Error using Remove.  Tree is already in a traversal.");
-      elsif not Exists(K, Tree) then
-         Ada.Exceptions.Raise_Exception (Key_Error'identity,
-                         "Error using Remove.  Key not found.");
       else -- Find the target node
          while Target /= null loop
             exit when K = Key(Target.Data);
             Parent := Target;
             if K < Key(Target.Data) then
-               Target := Target.Child(Left);
+               Name := Left;
             else
-               Target := Target.Child(Right);
+               Name := Right;
             end if;
+            Target := Parent.Child(Name);
          end loop;
+
+         if Target = null then
+            Ada.Exceptions.Raise_Exception (Key_Error'identity,
+                            "Error using Remove.  Key not found.");
+         end if;
+
          Item := Target.Data; -- Save target's data
+
          -- Now figure out the node arrangment
          if Target.Child(Right) = null then
             if Target = Tree.Root then
                Tree.Root := Target.Child(Left);
             else
-               Parent.Child(Left) := Target.Child(Left);
+               Parent.Child(Name) := Target.Child(Left);
             end if;
-         elsif
-           Target.Child(Left) = null then
+         elsif Target.Child(Left) = null then
             if Target = Tree.Root then
                Tree.Root := Target.Child(Right);
             else
-               Parent.Child(Right) := Target.Child(Right);
+               Parent.Child(Name) := Target.Child(Right);
             end if;
          else
             Original := Target;
-            Parent := Target;
-            Target := Target.Child(Right);
+            Parent   := Target;
+            Name     := Right;
+            Target   := Target.Child(Right);
             while Target.Child(Left) /= null loop
                Parent := Target;
-               Target := Target.Child(Left);
+               Name := Left;
+               Target := Target.Child(Name);
             end loop;
             Original.Data := Target.Data;
-            Parent.Child(Left) := Target.Child(Right);
+            Parent.Child(Name) := Target.Child(Right);
          end if;
          Tree.Count := Natural'Pred(Tree.Count);
          Free(Target);
