@@ -75,6 +75,9 @@ package body List_Manager is
    -- the New_Item. The item to be replaced is the one at the current cursor
    -- position.
    
+   -- Exceptions:
+   --    Cursor_Error     List is empty.
+   
    begin -- Replace
       
       if Empty(List) then
@@ -95,6 +98,10 @@ package body List_Manager is
    -- Item.  The cursor is placed at the item immediately preceding the item
    -- being removed.  If the item to be removed was at the head of the list,
    -- the cursor is placed at the new head of the list.
+   
+   -- Exceptions:
+   --    Cursor_Error     List is empty.
+   --    State_Error      List is in a traversal.
    
    begin -- Remove
        if Empty(List) then
@@ -128,6 +135,9 @@ package body List_Manager is
    -- Resets list attributes to zero (removes all items from the list). 
    -- If the list is empty, the procedure does nothing.
    
+   -- Exceptions:
+   --    State_Error       List is in a traversal.
+   
    begin  -- Clear
       if not Empty(List) then
 	 if List.Traversing then
@@ -148,6 +158,9 @@ package body List_Manager is
    
    -- Returns true if the List is empty and false otherwise.
    
+   -- Exceptions:
+   --    None.
+   
    begin -- Empty
       return List.Count = 0 ;
    end Empty ;
@@ -157,6 +170,9 @@ package body List_Manager is
    
    -- Returns the number of items in the List.  If List is empty, zero is
    -- returned.
+   
+   -- Exceptions:
+   --    None.
    
    begin  -- Count
       return List.Count ;
@@ -169,6 +185,10 @@ package body List_Manager is
    
    -- Moves the cursor to the given place in List.  This allows the cursor to
    -- jump to a given endpoint of the List.
+   
+   -- Exceptions:
+   --     Cursor_Error     List is empty.
+   --     State_Error      List is in a traversal.
    
    begin -- Move
       if Empty(List) then
@@ -191,6 +211,12 @@ package body List_Manager is
    
    -- Moves the cursor one item in List.  It only mves one item,
    -- in the direction provided by Course.
+   
+   -- Exceptions:
+   --     Cursor_Error     Cursor is at beginning of List and Course is Backward.
+   --     Cursor_Error     Cursor is at end of List and Course is Forward.
+   --     Cursor_Error     List is empty.
+   --     State_Error      List is in a traversal.
    
    begin -- Move
       if Empty(List) then
@@ -220,6 +246,9 @@ package body List_Manager is
    -- Returns true if the cursor for List is positioned at the start of List.
    -- Returns false otherwise, even if List is empty.
    
+   -- Exceptions:
+   --    None.
+   
    begin
       if Empty(List) then
 	 return False ;
@@ -234,6 +263,9 @@ package body List_Manager is
    -- Returns true if the cursor for List is positioned at the end of List.
    -- Returns false otherwise, even if List is empty.
    
+   -- Exceptions:
+   --    None.
+   
    begin
       if Empty(List) then
 	 return False ;
@@ -246,6 +278,9 @@ package body List_Manager is
    function Current_Item(List   : in List_Type) return Element_Type is
    
    -- Returns the item in List at the current cursor position.
+   
+   -- Exceptions:
+   --    Cursor_Error     List is empty.
    
    begin -- Current_Item
       if Empty(List) then
@@ -263,6 +298,9 @@ package body List_Manager is
    -- same order, and items at the same relative positions are equal.
    -- Returns false otherwise.
       
+   -- Exceptions:
+   --    None.
+   
       Loop_Count : Natural := 0 ;
       Result : Boolean ;
    
@@ -309,6 +347,7 @@ package body List_Manager is
    --     Any exceptions raised within procedure Process are propagated.
    
       Continue : Boolean := True ;
+      
    begin -- Traverse
       if not Empty(List) then
 	  if List.Traversing then
