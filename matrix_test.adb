@@ -72,7 +72,7 @@
             n : Float := -1.0 ;
 
 
-        negC  : Matrix(1..4, 1..3)  :=  (others => (others => 0.0)) ;
+        negB  : Matrix(1..3, 1..3)  :=  (others => (others => 0.0)) ;
         temp  : Matrix(1..3, 1..3)  :=  (others => (others => 0.0)) ;
 
    -----------------------------------------------------------------------
@@ -125,9 +125,9 @@
 
       New_Line ;
 
-      Put_line("Is C + -C = 0?") ;
-      negC := n * C ;
-      if (C + negC) = temp then
+      Put_line("Is B + -B = 0?") ;
+      negB := n * B ;
+      if (B + negB) = temp then
          Put_Line("Yes. Test 1.b passed") ;
       else
          Put_line("No. Test 1.b failed") ;
