@@ -131,7 +131,7 @@ package body Binary_Search_Tree is
             Original := Target;
             Parent   := Target;
             Name     := Right;
-            Target   := Target.Child(Right);
+            Target   := Target.Child(Name);
             while Target.Child(Left) /= null loop
                Parent := Target;
                Name := Left;
@@ -235,7 +235,7 @@ package body Binary_Search_Tree is
    --   State_Error   Tree is in a traversal.
 
          procedure PostClear( P : in out Tree_Node_Ptr) is
-         begin -- Postorder
+         begin -- PostClear
             if P /= null then
                PostClear(P.Child(Left));
                PostClear(P.Child(Right));
