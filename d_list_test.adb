@@ -322,6 +322,8 @@
       New_Line ;
       New_Line ;
       Put_Line("All tests passed!") ;
+      New_Line ;
+      New_Line ;
 
       exception
 
