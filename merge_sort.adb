@@ -24,14 +24,23 @@ with Priority_Queue_Manager;
 
 Procedure Merge_Sort is
 
+   type Data_Record is
+      record
+         Data : Integer;
+         Used : Boolean := False;
+      end record;
+
    subtype DOS8_3 is String(1..12);
 
    Input_File   : File_Type;
    Output_File  : File_Type;
    Filename     : String(1..512);
    Last         : Natural;
-   Input1       : Integer;
-   Input2       : Integer;
+   Input        : Integer;
+--    Input1       : Integer;
+--    Input2       : Integer;
+   Input1       : Data_Record;
+   Input2       : Data_Record;
    Temp_File1   : File_Type;
    Temp_File2   : File_Type;
    Temp_File3   : File_Type;
@@ -69,7 +78,8 @@ Procedure Merge_Sort is
 begin --Merge_Sort
 
    Put_Line("You'll need free disk space equal to a little more than twice ");
-   Put_Line("the size of your input file.");
+   Put_Line("the size of your input file.  Duplicate values are skipped.");
+   Put_Line("Sorted data is written to file OUTPUT.DAT");
    -- open or prompt for input file
    begin
       if Argument_Count = 1 then
@@ -90,13 +100,14 @@ begin --Merge_Sort
 
    -- Read the input file and write it back out in sorted chunks
    while not End_Of_File(Input_File) loop
-      Get(Input_File, Input1);
+      Get(Input_File, Input);
       Skip_Line(Input_File);
       begin
-         Insert(Input1, Tree);
+         Insert(Input, Tree);
       exception
          when Key_Error =>
             Skip_Line(Input_File);
+            Put_Line("Duplicate value: " & Integer'Image(Input));
       end;
       if BT.Count(Tree) = Temp_Size then -- dump tree
          Temp_Name1 := Tail(Trim(Natural'image(Temp_Count), Ada.Strings.Both), 8, '0') & ".tmp";
@@ -120,60 +131,117 @@ begin --Merge_Sort
    end if;
 
    -- Merge the files back together into one big sorted file
-   while Q.Count(Name_Queue) > 1 loop
+   loop
       Dequeue(Temp_Name1, Name_Queue);
       Dequeue(Temp_Name2, Name_Queue);
+      Temp_Name3 := Tail(Trim(Natural'image(Temp_Count), Ada.Strings.Both), 8, '0') & ".tmp";
       Open(Temp_File1, In_File, Temp_Name1);
       Open(Temp_File2, In_File, Temp_Name2);
-      Temp_Name3 := Tail(Trim(Natural'image(Temp_Count), Ada.Strings.Both), 8, '0') & ".tmp";
       Create(Temp_File3, Out_File, Temp_Name3);
 
-      Get(Temp_File1, Input1);
-      Get(Temp_File2, Input2);
-      while not (End_Of_File(Temp_File1) and End_Of_File(Temp_File2)) loop
-         if Input1 < Input2 then
-            Put(Temp_File3, Input1, Width => 1);
-            Skip_Line(Temp_File1);
-            Get(Temp_File1, Input1);
+      Get(Temp_File1, Input1.Data);
+      Skip_Line(Temp_File1);
+      Get(Temp_File2, Input2.Data);
+      Skip_Line(Temp_File2);
+      loop
+         if Input1.Used then -- get new value from file1
+              Get(Temp_File1, Input1.Data);
+              Input1.Used := False;
+              Skip_Line(Temp_File1);
+         end if;
+         if Input2.Used then -- get new value from file2
+              Get(Temp_File2, Input2.Data);
+              Input2.Used := False;
+              Skip_Line(Temp_File2);
+         end if;
+         if Input1.Data < Input2.Data then
+            Put(Temp_File3, Input1.Data, Width => 1);
+            Input1.Used := True;
          else
-            Put(Temp_File3, Input2, Width => 1);
-            Skip_Line(Temp_File2);
-            Get(Temp_File2, Input2);
+            Put(Temp_File3, Input2.Data, Width => 1);
+            Input2.Used := True;
          end if;
          New_Line(Temp_File3);
+         exit when End_Of_File(Temp_File1) or End_Of_File(Temp_File2);
       end loop;
-      if End_Of_File(Temp_File1) then
-         Put(Temp_File3, Input2, Width => 1);
-         while not End_Of_File(Temp_File2) loop
-            Get(Temp_File2, Input2);
-            Skip_Line(Temp_File2);
-            Put(Temp_File3, Input2, Width => 1);
-            New_Line(Temp_File3);
-         end loop;
-      else
-         Put(Temp_File3, Input1, Width => 1);
-         while not End_Of_File(Temp_File1) loop
-            Get(Temp_File1, Input1);
-            Skip_Line(Temp_File1);
-            Put(Temp_File3, Input1, Width => 1);
-            New_Line(Temp_File3);
-         end loop;
+      -- This is really hokey, but I have to compare remaining values against the
+      -- (possible) leftover value.
+      if not End_Of_File(Temp_File2) then
+         if not Input1.Used then
+            loop
+               if Input1.Data < Input2.Data then
+                  Put(Temp_File3, Input1.Data, Width => 1);
+                  Input1.Used := True;
+               else
+                  Put(Temp_File3, Input2.Data, Width => 1);
+                  Input2.Used := True;
+               end if;
+               New_Line(Temp_File3);
+               if not End_Of_File(Temp_File2) then
+                  Get(Temp_File2, Input2.Data);
+                  Input2.Used := False;
+                  Skip_Line(Temp_File2);
+               end if;
+               exit when Input1.Used;
+            end loop;
+         end if;
+         if not End_Of_File(Temp_File2) then
+            while not End_Of_File(Temp_File2) loop
+               Get(Temp_File2, Input2.Data);
+               Skip_Line(Temp_File2);
+               Put(Temp_File3, Input2.Data, Width => 1);
+               New_Line(Temp_File3);
+            end loop;
+         end if;
+         Input2.Used := False;
+      elsif not End_Of_File(Temp_File1) then
+         if not Input2.Used then
+            loop
+               if Input1.Data < Input2.Data then
+                  Put(Temp_File3, Input1.Data, Width => 1);
+                  Input1.Used := True;
+               else
+                  Put(Temp_File3, Input2.Data, Width => 1);
+                  Input2.Used := True;
+               end if;
+               New_Line(Temp_File3);
+               if not End_Of_File(Temp_File1) then
+                  Get(Temp_File1, Input1.Data);
+                  Input1.Used := False;
+                  Skip_Line(Temp_File1);
+               end if;
+               exit when Input2.Used;
+            end loop;
+         end if;
+         if not End_Of_File(Temp_File1) then
+            while not End_Of_File(Temp_File1) loop
+               Get(Temp_File1, Input1.Data);
+               Skip_Line(Temp_File1);
+               Put(Temp_File3, Input1.Data, Width => 1);
+               New_Line(Temp_File3);
+            end loop;
+         end if;
+         Input1.Used := False;
       end if;
       Enqueue(Temp_Name3, Name_Queue);
       Temp_Count := Natural'Succ(Temp_Count);
       Delete(Temp_File1);
       Delete(Temp_File2);
+      Close(Temp_File3);
+      exit when Q.Count(Name_Queue) = 1;
    end loop;
 
    -- copy final result to output file
+   Dequeue(Temp_Name1, Name_Queue);
+   Open(Temp_File1, In_File, Temp_Name1);
    Create(Output_File, Out_File, "output.dat");
-   while not End_Of_File(Temp_File3) loop
-      Get(Temp_File3, Input1);
-      Skip_Line(Temp_File3);
-      Put(Output_File, Input1, Width => 1);
-      Skip_Line(Output_File);
+   while not End_Of_File(Temp_File1) loop
+      Get(Temp_File1, Input);
+      Skip_Line(Temp_File1);
+      Put(Output_File, Input, Width => 1);
+      New_Line(Output_File);
    end loop;
-   Delete(Temp_File3);
+   Delete(Temp_File1);
    Close(Output_File);
 end Merge_Sort;
 
