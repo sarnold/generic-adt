@@ -44,7 +44,7 @@ package body List_Manager is
 		     Old_Item   : in out Element_Type;
 		     List       : in out List_Type);
    
-   -- Replaces An Item in The List.  The Old_Item is returned and replaced with
+   -- Replaces an Item in The List.  The Old_Item is returned and replaced with
    -- the New_Item. The item to be replaced is the one at the current cursor
    -- position.
    
@@ -74,11 +74,15 @@ package body List_Manager is
    begin  -- Clear
       if Empty(List) then
 	 return ;
-      elsif Traversing then
+      elsif List.Traversing then
 	 Ada.Exceptions.Raise_Exception (State_Error'identity,
                "Error using Clear.  List is in a traversal.") ;
       else
 	 List.Count := 0 ;
+	 List.Head := 0 ;
+	 List.Tail := 0 ;
+	 List.Cursor := 0 ;
+	 List.Traversing := False ;
       end if ;
    end Clear ;
    
@@ -104,69 +108,115 @@ package body List_Manager is
 	 return List.Count ;
       end if ;
    end Count ;
+   
    ----------------------------------------------------------
    procedure Move(
 		  List  : in out List_Type;
-		  Place : in     EndPoint);
+		  Place : in     EndPoint) is
    
    -- Moves the cursor to the given place in List.  This allows the cursor to
    -- jump to a given endpoint of the List.
    
-   -- Exceptions:
-   --     Cursor_Error     List is empty.
-   --     State_Error      List is in a traversal.
+   begin -- Move
+      if List.Count = 0 then
+	 Ada.Exceptions.Raise_Exception (Coursor_Error'identity,
+               "Error using Move.  List is empty.") ;
+      elsif List.Traversing then
+	 Ada.Exceptions.Raise_Exception (State_Error'identity,
+               "Error using Move.  List is in a traversal.") ;
+      elsif Place = At_End  then
+	 List.Cursor := List.Tail ;
+      else
+	 List.Cursor := List.Head ;
+      end if ;
+   end Move ;
    
    ----------------------------------------------------------
    procedure Move(
 		  List   : in out List_Type;
-		  Course : in     Direction);
+		  Course : in     Direction) is
    
    -- Moves the cursor one item in List.  It only mves one item,
    -- in the direction provided by Course.
    
-   -- Exceptions:
-   --     Cursor_Error     Cursor is at beginning of List and Course is Backward.
-   --     Cursor_Error     Cursor is at end of List and Course is Forward.
-   --     Cursor_Error     List is empty.
-   --     State_Error      List is in a traversal.
-   
-   
+   begin -- Move
+      if Empty(List) then
+	 Ada.Exceptions.Raise_Exception (Coursor_Error'identity,
+               "Error using Move.  List is empty.") ;
+      elsif List.Traversing then
+	 Ada.Exceptions.Raise_Exception (State_Error'identity,
+               "Error using Move.  List is in a traversal.") ;
+      elsif ((Course = Forward) and then
+	 (List.Cursor = List.Tail)) then
+	 Ada.Exceptions.Raise_Exception (Coursor_Error'identity,
+               "Error using Move.  Can't move beyond end of List.") ;
+      elsif ((Course = Backward) and then
+	 (List.Cursor = List.Head)) then
+	 Ada.Exceptions.Raise_Exception (Coursor_Error'identity,
+               "Error using Move.  Can't move beyond end of List.") ;
+      elsif Course = Forward then
+	 List.Cursor := Positive'Succ(List.Cursor) ;
+      else
+	 List.Cursor := Positive'Pred(List.Cursor) ;
+      end if ;
+   end Move ;
    
    ----------------------------------------------------------
-   function At_Start(List   : in List_Type) return boolean;
+   function At_Start(List   : in List_Type) return Boolean is
    
    -- Returns true if the cursor for List is positioned at the start of List.
    -- Returns false otherwise, even if List is empty.
    
-   -- Exceptions:
-   --    None.
+   begin
+      if Empty(List) then
+	 return False ;
+      else
+         return List.Cursor = List.Head ;
+      end if ;
+   end At_Start ;
    
   ----------------------------------------------------------
-   function At_End(List   : in List_Type) return boolean;
+   function At_End(List   : in List_Type) return Boolean is
    
    -- Returns true if the cursor for List is positioned at the end of List.
    -- Returns false otherwise, even if List is empty.
    
-   -- Exceptions:
-   --    None.
+   begin
+      if Empty(List) then
+	 return False ;
+      else
+         return List.Cursor = List.Tail ;
+      end if ;
+   end At_End ;
    
   ----------------------------------------------------------
-   function Current_Item(List   : in List_Type) return Element_Type;
+   function Current_Item(List   : in List_Type) return Element_Type is
    
    -- Returns the item in List at the current cursor position.
    
-   -- Exceptions:
-   --    Cursor_Error     List is empty.
-   
+   begin -- Current_Item
+      if Empty(List) then
+	 Ada.Exceptions.Raise_Exception (Coursor_Error'identity,
+		"Error retrieving list element.  List is empty.") ;
+      else
+	 return List.List_Data(List.Cursor) ;
+      end if ;
+   end Current_Item ;
+
    ----------------------------------------------------------
-   function "="(Left, Right  : in List_Type) return boolean;
+   function "="(Left, Right  : in List_Type) return Boolean is
    
    -- Returns true if both lists have the same number of elements in the
    -- same order, and items at the same relative positions are equal.
    -- Returns false otherwise.
    
-   -- Exceptions:
-   --    None.
+   begin -- "="
+      if Left.Count /= Right.Count then
+	 return False ;
+      elsif Empty(Left) and Empty(Right) then
+	 return True ;
+      end if ;
+   end "=" ;
    
    ----------------------------------------------------------
    procedure Traverse(List : in out List_Type; Course : in Direction);
