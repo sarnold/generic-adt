@@ -107,8 +107,3 @@ private
       end record ;
 
 end Stack_Manager ;
-
-
-
-
-
