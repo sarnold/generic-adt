@@ -36,17 +36,26 @@ package Stack_Manager is
 
 
    -------------------------------------------------------------------------
-   procedure Clear(S   : in out Stack_Type) ;
+   procedure Pop(Item : out Element_Type; S : in out Stack_Type) ;
 
-   -- Removes all items from stack S.  If the stack is empty, the procedure
-   -- does nothing.
+   -- Removes items from Stack S.
 
    -- Exceptions:
-   --    None.
+   --   Underflow    Stack is empty.
 
 
 
    -------------------------------------------------------------------------
+   function Top(S : in Stack_Type) return Element_Type ;
+
+   -- Returns a copy of the item at the top of the Stack S.
+
+   -- Exceptions:
+   --   Underflow    Stack is empty.
+
+
+
+  -------------------------------------------------------------------------
    function Empty(S  : in Stack_Type) return Boolean ;
 
    -- Returns true if the Stack is empty and false otherwise.
@@ -61,6 +70,17 @@ package Stack_Manager is
 
    -- Returns the number of items in stack S.  If the stack is empty,
    -- zero is returned.
+
+   -- Exceptions:
+   --    None.
+
+
+
+   -------------------------------------------------------------------------
+   procedure Clear(S   : in out Stack_Type) ;
+
+   -- Removes all items from stack S.  If the stack is empty, the procedure
+   -- does nothing.
 
    -- Exceptions:
    --    None.
@@ -87,4 +107,5 @@ private
       end record ;
 
 end Stack_Manager ;
+
 

@@ -3,15 +3,13 @@
 -- CS152, Spring 2000
 -- Assignment Stack and Queue Packages
 -- Stephen L Arnold
--- generic package body Stack_Manager
+-- generic package specification Stack_Manager
 ----------------------------------------------------------------------------
 -- Description: This package provides services to save items in a stack.
 -- The items to be saved in the stack are defined via the generic formal
 -- type parameter Element_Type.  The stack grows dynamically and thus its
 -- maximum size is limited only by available memory.  The abstraction
--- of a stack is defined by the exported data type Stack_Type.  This
--- package uses the generic package Dynamic_List_Manager to implement
--- the stack objects.
+-- of a stack is defined by the exported data type Stack_Type.
 ----------------------------------------------------------------------------
 
 with Dynamic_List_Manager ;
@@ -38,17 +36,26 @@ package Stack_Manager is
 
 
    -------------------------------------------------------------------------
-   procedure Clear(S   : in out Stack_Type) ;
+   procedure Pop(Item : out Element_Type; S : in out Stack_Type) ;
 
-   -- Removes all items from stack S.  If the stack is empty, the procedure
-   -- does nothing.
+   -- Removes items from Stack S.
 
    -- Exceptions:
-   --    None.
+   --   Underflow    Stack is empty.
 
 
 
    -------------------------------------------------------------------------
+   function Top(S : in Stack_Type) return Element_Type ;
+
+   -- Returns a copy of the item at the top of the Stack S.
+
+   -- Exceptions:
+   --   Underflow    Stack is empty.
+
+
+
+  -------------------------------------------------------------------------
    function Empty(S  : in Stack_Type) return Boolean ;
 
    -- Returns true if the Stack is empty and false otherwise.
@@ -63,6 +70,17 @@ package Stack_Manager is
 
    -- Returns the number of items in stack S.  If the stack is empty,
    -- zero is returned.
+
+   -- Exceptions:
+   --    None.
+
+
+
+   -------------------------------------------------------------------------
+   procedure Clear(S   : in out Stack_Type) ;
+
+   -- Removes all items from stack S.  If the stack is empty, the procedure
+   -- does nothing.
 
    -- Exceptions:
    --    None.
@@ -89,4 +107,5 @@ private
       end record ;
 
 end Stack_Manager ;
+
 
