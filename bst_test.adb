@@ -39,14 +39,15 @@
 
       package BT is new Binary_Search_Tree(Integer, Integer, Identity, "=","<");    use BT;
       package Boolean_IO is new Ada.Text_IO.Enumeration_IO (enum => Boolean);
-      subtype Small_Positive is positive range 1..20;
-      package Random_Numbers is new Ada.Numerics.Discrete_Random(Small_Positive);
-      Gen : Random_Numbers.Generator;
-      n   : Small_Positive;
+--       subtype Small_Positive is positive range 1..20;
+--       package Random_Numbers is new Ada.Numerics.Discrete_Random(Small_Positive);
+--       Gen : Random_Numbers.Generator;
+--       n   : Small_Positive;
 
       A, B, C, D : aliased BST;
-      M : Integer := 0;
+      m : Integer := 0;
       ns : array(1..8) of Integer := (11, 8, 10, 17, 3, 1, 4, 13);
+      na : array(1..8) of Integer := (12, 9, 11, 16, 5, 18, 7, 14);
 
       procedure Process(I : in Integer; Cont : out Boolean) is
       begin -- Process
@@ -91,6 +92,7 @@
       BT.Insert(Item => 1, Tree => D);
       Put_Line("Beginning traversal exception tests...");
       Tr(D'access, In_Order);
+      BT.Remove(1, D, m);
       New_Line;
 
       Put_Line("Creating empty trees...");
@@ -141,15 +143,11 @@
       end loop;
       New_Line;
 
-      Put_Line("Filling trees with 8 random integers...");
-      Random_Numbers.Reset(Gen);
+      Put_Line("Filling more trees with known values...");
       for I in 1..8 loop
-         n := Random_Numbers.Random(Gen);
-         BT.Insert(Item => N, Tree => A);
-         n := Random_Numbers.Random(Gen);
-         BT.Insert(Item => N, Tree => B);
-         n := Random_Numbers.Random(Gen);
-         BT.Insert(Item => N, Tree => C);
+         BT.Insert(na(I), A);
+         BT.Insert(ns(I), B);
+         BT.Insert(na(I), C);
       end loop;
       New_Line;
 
@@ -233,7 +231,7 @@
 
          when Error : others =>
 
-            Put_Line("Something is terribly wrong. There was as unanticipated exception: ");
+            Put_Line("Something is terribly wrong. There was an unanticipated exception: ");
             Put_Line(Exception_Name(Error));
             Put_Line(Exception_Message(Error));
 
