@@ -1,17 +1,17 @@
--------------------------------------------------------------
+----------------------------------------------------------------------------
 -- Allan Hancock College
 -- CS152, Spring 2000
 -- Assignment List Package (Array Implementation)
 -- Stephen L Arnold
 -- generic package specification List_Manager
--------------------------------------------------------------
+----------------------------------------------------------------------------
 -- Description: This package provides services to save items in a list.
 -- The items to be saved in the list are defined via the generic type
 -- parameter Element_Type.  The maximum size of the list is defined by
 -- the generic constant object Max_Size.  Max_Size is an optional parameter
 -- in the instantiation and defaults to the value shown below.  The
 -- abstraction of a list is defined by the exported data type List_Type.
--------------------------------------------------------------
+----------------------------------------------------------------------------
 
 generic
    type Element_Type is private;
@@ -31,7 +31,7 @@ package List_Manager is
    State_Error  : exception;  -- Raised on invalid state change.
    
    
-   ----------------------------------------------------------
+   -------------------------------------------------------------------------
    procedure Insert(
 		    Item   : in     Element_Type;
 		    List   : in out List_Type;
@@ -45,23 +45,23 @@ package List_Manager is
    --    Overflow      Item could not be inserted into List.
    --    State_Error   List is in a traversal.
    
-   ----------------------------------------------------------
+   -------------------------------------------------------------------------
    procedure Replace(
 		     New_Item   : in     Element_Type;
 		     Old_Item   : in out Element_Type;
 		     List       : in out List_Type);
    
-   -- Replaces An Item in The List.  The Old_Item is returned and replaced with
-   -- the New_Item. The item to be replaced is the one at the current cursor
-   -- position.
+   -- Replaces An Item in The List.  The Old_Item is returned and replaced
+   -- with the New_Item. The item to be replaced is the one at the current
+   -- cursor position.
    
    -- Exceptions:
    --    Cursor_Error     List is empty.
    
-   ----------------------------------------------------------
+   -------------------------------------------------------------------------
    procedure Remove(
-		    Item   : in out Element_Type;
-		    List   : in out List_Type);
+		    List   : in out List_Type;
+		    Item   :    out Element_Type);
    
    -- Removes the Item in List at the current cursor position and returns
    -- Item.  The cursor is placed at the item immediately preceding the item
@@ -72,7 +72,7 @@ package List_Manager is
    --    Cursor_Error     List is empty.
    --    State_Error      List is in a traversal.
    
-   ----------------------------------------------------------
+   -------------------------------------------------------------------------
    procedure Clear(List   : in out List_Type);
    
    -- Removes all items from the list.  If the list is empty, the procedure
@@ -81,7 +81,7 @@ package List_Manager is
    -- Exceptions:
    --    State_Error       List is in a traversal.
    
-   ----------------------------------------------------------
+   -------------------------------------------------------------------------
    function Empty(List   : in List_Type) return boolean;
    
    -- Returns true if the List is empty and false otherwise.
@@ -89,7 +89,7 @@ package List_Manager is
    -- Exceptions:
    --    None.
    
-   ----------------------------------------------------------
+   -------------------------------------------------------------------------
    function Count(List   : in List_Type) return natural;
    
    -- Returns the number of items in the List.  If List is empty, zero is
@@ -98,7 +98,7 @@ package List_Manager is
    -- Exceptions:
    --    None.
    
-   ----------------------------------------------------------
+   -------------------------------------------------------------------------
    generic
       with procedure Process(Item : in out Element_Type; Continue : out boolean);
    procedure Traverse(List : in out List_Type; Course : in Direction);
@@ -123,7 +123,7 @@ package List_Manager is
    --     State_Error     Attempt to change List state in procedure Process.
    --     Any exceptions raised within procedure Process are propagated.
    
-   ----------------------------------------------------------
+   -------------------------------------------------------------------------
    procedure Move(
 		  List  : in out List_Type;
 		  Place : in     EndPoint);
@@ -135,7 +135,7 @@ package List_Manager is
    --     Cursor_Error     List is empty.
    --     State_Error      List is in a traversal.
    
-   ----------------------------------------------------------
+   -------------------------------------------------------------------------
    procedure Move(
 		  List   : in out List_Type;
 		  Course : in     Direction);
@@ -149,7 +149,7 @@ package List_Manager is
    --     Cursor_Error     List is empty.
    --     State_Error      List is in a traversal.
    
-   ----------------------------------------------------------
+   -------------------------------------------------------------------------
    function At_Start(List   : in List_Type) return boolean;
    
    -- Returns true if the cursor for List is positioned at the start of List.
@@ -158,7 +158,7 @@ package List_Manager is
    -- Exceptions:
    --    None.
    
-  ----------------------------------------------------------
+  --------------------------------------------------------------------------
    function At_End(List   : in List_Type) return boolean;
    
    -- Returns true if the cursor for List is positioned at the end of List.
@@ -167,7 +167,7 @@ package List_Manager is
    -- Exceptions:
    --    None.
    
-  ----------------------------------------------------------
+  --------------------------------------------------------------------------
    function Current_Item(List   : in List_Type) return Element_Type;
    
    -- Returns the item in List at the current cursor position.
@@ -175,7 +175,7 @@ package List_Manager is
    -- Exceptions:
    --    Cursor_Error     List is empty.
    
-   ----------------------------------------------------------
+   -------------------------------------------------------------------------
    function "="(Left, Right  : in List_Type) return boolean;
    
    -- Returns true if both lists have the same number of elements in the
@@ -189,12 +189,12 @@ private
    type List_Array is array (Positive range <>) of Element_Type;
    type List_Type is
       record
-	 Head       : Natural := 0;             -- Index of first element.
-	 Tail       : Natural := 0;             -- Index of last element.
-	 Cursor     : Natural := 0;             -- Index of cursor element.
-	 Count      : Natural := 0;             -- Number of items in list.
-	 Traversing : Boolean := False;         -- True when in a traversal.
-	 List_Data  : List_Array(1..Max_Size);  -- User data.
+	 Head        : Natural := 0;             -- Index of first element.
+	 Tail        : Natural := 0;             -- Index of last element.
+	 Cursor      : Natural := 0;             -- Index of cursor element.
+	 Count       : Natural := 0;             -- Number of items in list.
+	 Traversing  : Boolean := False;         -- True when in a traversal.
+	 List_Data   : List_Array(1..Max_Size);  -- User data.
       end record;
 end List_Manager;
 

@@ -37,20 +37,27 @@ package body List_Manager is
       if List.Count = Max_Size then
 	 Ada.Exceptions.Raise_Exception (Overflow'identity,
 			 "Error using Insert.  List is already full.") ;
+      elsif List.Traversing then
+	 Ada.Exceptions.Raise_Exception (State_Error'identity,
+			 "Error using Insert.  List is already in a traversal.") ;
       else
 	 if List.Count = 0 then
-	    List.List_Data'First := Item ;
+	    List.List_Data(1) := Item ;
 	    List.Head := 1 ;
 	 elsif Place = At_End then
-	    List.List_Data(List.Count + 1) := Item ;
+	    List.List_Data(Positive'Succ(List.Count)) := Item ;
 	 elsif Place = Before then
-	    List.List_Data(List.Cursor + 1..List.Tail + 1) := List.List_Data(List.Cursor..List.Tail) ;
+	    List.List_Data(Positive'Succ(List.Cursor)..Positive'Succ(List.Tail)) :=
+	      List.List_Data(List.Cursor..List.Tail) ;
 	    List.List_Data(List.Cursor) := Item ;
 	 elsif Place = After then
-	    List.List_Data(List.Cursor + 2..List.Tail + 2) := List.List_Data(List.Cursor + 1..List.Tail + 1) ;
-	    List.List_Data(List.Cursor + 1) := Item ;
+	    Move(List, Forward) ;
+	    List.List_Data(Positive'Succ(List.Cursor)..Positive'Succ(List.Tail)) :=
+	      List.List_Data(List.Cursor..List.Tail) ;
+	    List.List_Data(List.Cursor) := Item ;
 	 else
-	    List.List_Data(List.Head + 1..List.Tail + 1) := List.List_Data(List.Head..List.Tail) ;
+	    List.List_Data(Positive'Succ(List.Head)..Positive'Succ(List.Tail)) :=
+	      List.List_Data(List.Head..List.Tail) ;
 	    List.List_Data(List.Head) := Item ;
 	 end if ;
 	 List.Count := List.Count + 1 ;
@@ -71,7 +78,7 @@ package body List_Manager is
    begin -- Replace
       
       if Empty(List) then
-	 Ada.Exceptions.Raise_Exception (Coursor_Error'identity,
+	 Ada.Exceptions.Raise_Exception (Cursor_Error'identity,
 			 "Error using Replace.  List is empty.") ;
       else
 	 Old_Item := List.List_Data(List.Cursor) ;
@@ -81,8 +88,8 @@ package body List_Manager is
    
    -------------------------------------------------------------------------
    procedure Remove(
-		    Item   : in out Element_Type;
-		    List   : in out List_Type) is
+		    List   : in out List_Type;
+		    Item   :    out Element_Type) is
    
    -- Removes the Item in List at the current cursor position and returns
    -- Item.  The cursor is placed at the item immediately preceding the item
@@ -91,19 +98,26 @@ package body List_Manager is
    
    begin -- Remove
        if Empty(List) then
-	 Ada.Exceptions.Raise_Exception (Coursor_Error'identity,
+	 Ada.Exceptions.Raise_Exception (Cursor_Error'identity,
 			 "Error using Remove.  List is empty.") ;
        elsif List.Traversing then
 	 Ada.Exceptions.Raise_Exception (State_Error'identity,
 			 "Error using Remove.  List is in a traversal.") ;
+       elsif List.Count = 1 then
+	  Item := List.List_Data(List.Head) ;
+	  Clear(List) ;
        else
 	  if List.Cursor = List.Tail then
 	     Item := List.List_Data(List.Cursor) ;
 	  else
 	     Item := List.List_Data(List.Cursor) ;
-	     List.List_Data(List.Cursor..List.Tail) := List.List_Data(List.Cursor + 1..List.Tail + 1) ;
+	     List.List_Data(List.Cursor..Positive'Pred(List.Tail)) :=
+	       List.List_Data(Positive'Succ(List.Cursor)..List.Tail) ;
 	  end if ;
-       	  List.Count := List.Count - 1 ;
+	  if List.Cursor /= List.Head then
+	     Move(List, Backward) ;
+	  end if ;
+       	  List.Count := Positive'Pred(List.Count) ;
 	  List.Tail := List.Count ;
        end if ;
    end Remove;
@@ -158,7 +172,7 @@ package body List_Manager is
    
    begin -- Move
       if Empty(List) then
-	 Ada.Exceptions.Raise_Exception (Coursor_Error'identity,
+	 Ada.Exceptions.Raise_Exception (Cursor_Error'identity,
                "Error using Move.  List is empty.") ;
       elsif List.Traversing then
 	 Ada.Exceptions.Raise_Exception (State_Error'identity,
@@ -180,18 +194,18 @@ package body List_Manager is
    
    begin -- Move
       if Empty(List) then
-	 Ada.Exceptions.Raise_Exception (Coursor_Error'identity,
+	 Ada.Exceptions.Raise_Exception (Cursor_Error'identity,
                "Error using Move.  List is empty.") ;
       elsif List.Traversing then
 	 Ada.Exceptions.Raise_Exception (State_Error'identity,
                "Error using Move.  List is in a traversal.") ;
       elsif ((Course = Forward) and then
 	 (List.Cursor = List.Tail)) then
-	 Ada.Exceptions.Raise_Exception (Coursor_Error'identity,
+	 Ada.Exceptions.Raise_Exception (Cursor_Error'identity,
                "Error using Move.  Can't move beyond end of List.") ;
       elsif ((Course = Backward) and then
 	 (List.Cursor = List.Head)) then
-	 Ada.Exceptions.Raise_Exception (Coursor_Error'identity,
+	 Ada.Exceptions.Raise_Exception (Cursor_Error'identity,
                "Error using Move.  Can't move beyond end of List.") ;
       elsif Course = Forward then
 	 List.Cursor := Positive'Succ(List.Cursor) ;
@@ -235,7 +249,7 @@ package body List_Manager is
    
    begin -- Current_Item
       if Empty(List) then
-	 Ada.Exceptions.Raise_Exception (Coursor_Error'identity,
+	 Ada.Exceptions.Raise_Exception (Cursor_Error'identity,
 		"Error retrieving list element.  List is empty.") ;
       else
 	 return List.List_Data(List.Cursor) ;
@@ -250,23 +264,25 @@ package body List_Manager is
    -- Returns false otherwise.
       
       Loop_Count : Natural := 0 ;
+      Result : Boolean ;
    
    begin -- "="
       if Left.Count /= Right.Count then
-	 return False ;
+	 Result := False ;
       elsif Empty(Left) and Empty(Right) then  -- empty lists are equal.
-	 return True ;
+	 Result := True ;
       else 
-	 for I in 1..List.Count loop
-	    exit when Left.Cursor /= Right.Cursor ;
+	 for I in 1..Left.Count loop
+	    exit when Left.List_Data(I) /= Right.List_Data(I) ;
 	    Loop_Count := Positive'Succ(Loop_Count) ;
 	 end loop ;
-	 if Loop_Count /= List.Count then  -- early exit => lists are not equal.
-	   return False ;
+	 if Loop_Count /= Left.Count then  -- early exit => lists are not equal.
+	   Result := False ;
 	 else
-	    return True ;
+	    Result := True ;
 	 end if ;
       end if ;
+      return Result ;
    end "=" ;
    
    -------------------------------------------------------------------------
@@ -297,7 +313,7 @@ package body List_Manager is
       if not Empty(List) then
 	  if List.Traversing then
 	    Ada.Exceptions.Raise_Exception (State_Error'identity,
-			    "Error using Clear.  List is in a traversal.") ;
+			    "Error using Traverse.  List is already in a traversal.") ;
 	  else
 	     List.Traversing := True ;
 	     loop
@@ -317,4 +333,3 @@ package body List_Manager is
       end if ;
    end Traverse ;
 end List_Manager;
-
