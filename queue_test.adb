@@ -26,7 +26,7 @@
 
    with Priority_Queue_Manager ;
 
-   procedure Q_Test is
+   procedure Queue_Test is
 
       function Identity(Element : in Integer) return Integer is
          begin --Identity
@@ -153,4 +153,4 @@
          Put_Line(Exception_Name(Error)) ;
          Put_Line(Exception_Message(Error)) ;
 
-    end Q_Test ;
+    end Queue_Test ;
