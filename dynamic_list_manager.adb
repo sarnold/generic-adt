@@ -332,27 +332,23 @@ package body Dynamic_List_Manager is
       
       Pright : List_Element_Ptr := Right.Head ;
 
-   
-      Loop_Count : Natural := 0 ;
-      Result : Boolean ;
+      
+      if Left.Count /= Right.Count then
+         Return False ;
    
          while (Pleft /= null) and (Pright /= null) loop
             if Pleft.Data /= Pright.Data then
-	 Result := False ;
-      elsif Empty(Left) and Empty(Right) then  -- empty lists are equal.
-	 Result := True ;
+	 Return False ;
       else 
-	 for I in 1..Left.Count loop
-	    exit when Left.Cursor.Data /= Right.Cursor.Data ;
-	    Loop_Count := Positive'Succ(Loop_Count) ;
+	 while (Pleft /= null) and (Pright /= null) loop
+	    if Pleft.Data /= Pright.Data then
+	       return False ;
+	    end if ;
+	    Pleft := Pleft.Next ;
+	    Pright := Pright.Next ;
 	 end loop ;
-	 if Loop_Count /= Left.Count then  -- early exit => lists are not equal.
-	   Result := False ;
-	 else
-	    Result := True ;
-	 end if ;
+	 return True ;
    procedure Traverse(List : access List_Type; Course : in Direction) is
-      return Result ;
 
    
    -- advances in the direction indicated by Course until an endpoint of List
@@ -381,23 +377,29 @@ package body Dynamic_List_Manager is
           if List.Traversing then
       
                             "Error using Traverse.  List is already in a traversal.") ;
-      if List.Count /= 0 then
+          else
 	  if List.Traversing then
 	    Ada.Exceptions.Raise_Exception (State_Error'identity,
 			    "Error using Traverse.  List is already in a traversal.") ;
 	  else
-	     List.Traversing := True ;
-	     loop
-		Process(List.Cursor.Data, Continue) ;
+	     begin
+		List.Traversing := True ;
+		loop
+		   Process(List.Cursor.Data, Continue) ;
 			
-		exit when((Course = Forward) and (List.Cursor = List.Tail)) or
-		((Course = Backward) and (List.Cursor = List.Head)) or not Continue ;
+		   exit when((Course = Forward) and (List.Cursor = List.Tail)) or
+		     ((Course = Backward) and (List.Cursor = List.Head)) or not Continue ;
 			
-		if Course = Forward then
-		   List.Cursor := List.Cursor.Next ;
-		else
-		   List.Cursor := List.Cursor.Prev ;
-		end if ;
-	     end loop ;
-	     List.Traversing := False ;
+		   if Course = Forward then
+		      List.Cursor := List.Cursor.Next ;
+		   else
+		      List.Cursor := List.Cursor.Prev ;
+		   end if ;
+		end loop ;
+		List.Traversing := False ;
+	     exception
+		when State_Error =>
+		   List.Traversing := False ;
+		   raise State_Error ;
+	     end ;
 	  end if ;
