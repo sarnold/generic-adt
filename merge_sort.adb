@@ -12,7 +12,8 @@
 --  You can enter an input filename on the command line, or the program
 --  will prompt you for the name.  Output is written to the filename
 --  'output.dat' so make sure your input file has a different name.
---  Also, the input file should have one integer value per line.
+--  Also, the input file should have one integer value per line.  Duplicate
+--  processing is not guaranteed to be correct (some will be left out).
 -----------------------------------------------------------------------------
 
 with Ada.Command_Line;              use Ada.Command_Line;
