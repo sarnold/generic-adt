@@ -30,12 +30,8 @@
    with Ada.Exceptions ;                     use Ada.Exceptions ;
    with Ada.Numerics.Discrete_Random ;
    with Ada.Unchecked_Deallocation ;
---   with Ada.Command_Line ;                 use Ada.Command_Line ;
---   with Ada.Strings.Fixed;                 use Ada.Strings.Fixed;
---   with Ada.Strings.Maps.Constants;        use Ada.Strings.Maps.Constants;
 
    with Dynamic_List_Manager ;
---   with Minimum_Float_String_Width ;
 
    procedure D_List_Test is
       package L is new Dynamic_List_Manager(Integer) ;    use L ;
@@ -55,9 +51,6 @@
       
       procedure Write_List is new Traverse(Put) ;
       
-      --A : L.List_Type ;
-      --B : L.List_Type ;
-      --C : L.List_Type ;
       M : Integer ;
       T : Boolean := True ;
 
@@ -283,25 +276,6 @@
       end ;
       New_Line ;
 
---       Put_Line("Filling C to 11 elements (Max_Size = 10)...") ;
---       Random_Numbers.Reset(Gen) ;
---       begin
--- 	 for I in 1..11 loop
--- 	    n := Random_Numbers.Random(Gen) ;
--- 	    L.Insert(Item => N, List => C) ;
--- 	 end loop ;
---          Put_Line("This test failed.") ;
---          exception
---             when Error : Overflow =>
---                Put("The exception was: ") ;
---                Put_Line(Exception_Name(Error)) ;
---                Put("The exception message is: ") ;
---                Put_Line(Exception_Message(Error)) ;
---                Put_Line("Overflow test passed.") ;
---       end ;
---       New_Line ;
-      
-      
       exception
 
          when Error : others =>
