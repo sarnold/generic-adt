@@ -25,7 +25,7 @@ package body Stack_Manager is
    --   Overflow    Item could not be added to S.
 
    begin -- Push
-      LM.Insert(Item, S.List) ;
+      LM.Insert(Item, S.List, LM.At_Start) ;
       exception
          when LM.Overflow =>
             Ada.Exceptions.Raise_Exception (Overflow'identity,
