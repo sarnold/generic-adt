@@ -7,7 +7,7 @@
 ----------------------------------------------------------------------------
 -- Description: This package tests the list_manager package.
 -- 
--- It tests all procedures and function, as well as each exception.  The
+-- It tests all procedures and functions, as well as most exceptions.  The
 -- test variables are lists of integers, but other types should also work.
 -- Exceptions raised in procedure process are propagted.
 --
