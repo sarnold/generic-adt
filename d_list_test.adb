@@ -41,7 +41,38 @@
       Gen : Random_Numbers.Generator ;
       n   : Small_Positive ;
       
-      A, B, C : aliased List_Type ;
+      A, B, C, D : aliased List_Type ;
+      M : Integer := 0 ;
+      
+      procedure Process(I : in out Integer; Cont : out Boolean) is
+      begin -- Process
+	 begin
+	    Cont := True ;
+	    L.Insert(1, D) ;
+	    Put_Line("Failed insert during traversal test.") ;
+	 exception
+            when Error : State_Error =>
+               Put("The exception was: ") ;
+               Put_Line(Exception_Name(Error)) ;
+               Put("The exception message is: ") ;
+               Put_Line(Exception_Message(Error)) ;
+               Put_Line("Insert during traversal test passed.") ;
+	 end ;
+	 New_Line ;
+	 begin
+	    L.Replace(1, M, D) ;
+	    Put_Line("Failed replace during traversal test.") ;
+	 exception
+            when Error : State_Error =>
+               Put("The exception was: ") ;
+               Put_Line(Exception_Name(Error)) ;
+               Put("The exception message is: ") ;
+               Put_Line(Exception_Message(Error)) ;
+               Put_Line("Replace during traversal test passed.") ;
+	 end ;
+      end Process ;
+      
+      procedure Tr is new Traverse(Process) ;
       
       procedure Put(I : in out Integer; Cont : out Boolean) is
       begin -- Put
@@ -51,10 +82,12 @@
       
       procedure Write_List is new Traverse(Put) ;
       
-      M : Integer ;
-      T : Boolean := True ;
-
    begin -- D_List_Test
+      
+      L.Insert(Item => 1 ,List => D) ;
+      Put_Line("Beginning traversal exception tests...") ;
+      Tr(D'access, Forward) ;
+      New_Line ;
       
       Put_Line("Creating empty lists...") ;
       Put_Line("Count(A) = " & Natural'Image(L.Count(A))) ;
@@ -167,7 +200,7 @@
       Put("Is cursor A at the start?  ") ; Boolean_IO.Put(At_Start (A)) ; New_Line ;
       New_Line ;
       
-      Put_Line("Beginning exception tests.") ;
+      Put_Line("Beginning exception tests...") ;
       begin
 	 Put_Line("Getting current item of C...") ;
 	 Put_Line("Current item of C = " & Natural'Image(L.Current_Item(C))) ;
@@ -275,6 +308,8 @@
                Put_Line("Move test passed.") ;
       end ;
       New_Line ;
+      New_Line ;
+      Put_Line("All tests passed!") ;
 
       exception
 
