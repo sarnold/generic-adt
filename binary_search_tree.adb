@@ -42,12 +42,12 @@ package body Binary_Search_Tree is
       if Tree.Traversing then
          Ada.Exceptions.Raise_Exception (State_Error'identity,
                          "Error using Insert.  Tree is already in a traversal.");
-      elsif Exists(K, Tree) then
+      elsif Exists(Key(Item), Tree) then
          Ada.Exceptions.Raise_Exception (Key_Error'identity,
                          "Error using Insert.  Key already exists.");
       end if;
       begin
-         New_Item := new Tree_Node'(Data => Item);
+         New_Item := new Tree_Node'(Item, (others => null));
       exception
          when Storage_Error =>
             Ada.Exceptions.Raise_Exception (Overflow'identity,
@@ -109,14 +109,14 @@ package body Binary_Search_Tree is
             if Target = Tree.Root then
                Tree.Root := Target.Child(Left);
             else
-               Parent.Child(Child_Name) := Target.Child(Left);
+               Parent.Child(Left) := Target.Child(Left);
             end if;
          elsif
            Target.Child(Left) = null then
             if Target = Tree.Root then
                Tree.Root := Target.Child(Right);
             else
-               Parent.Child(Child_Name) := Target.Child(Right);
+               Parent.Child(Right) := Target.Child(Right);
             end if;
          else
             Original := Target;
@@ -178,14 +178,14 @@ package body Binary_Search_Tree is
                          "Error using Retrieve.  Key not found.");
       else
          while Ptr /= null loop
-            if K = Key(Ptr.Data) then
-               return Ptr.Data;
-            elsif K < Key (Ptr.Data) then
+            exit when K = Key(Ptr.Data);
+            if K < Key (Ptr.Data) then
                Ptr := Ptr.Child(Left);
             else
                Ptr := Ptr.Child(Right);
             end if;
          end loop;
+         return Ptr.Data;
       end if;
    end Retrieve;
 
@@ -223,7 +223,7 @@ package body Binary_Search_Tree is
    -- Exceptions:
    --   State_Error   Tree is in a traversal.
 
-         procedure PostClear( P : in Tree_Node_Ptr) is
+         procedure PostClear( P : in out Tree_Node_Ptr) is
          begin -- Postorder
             if P /= null then
                PostClear(P.Child(Left));

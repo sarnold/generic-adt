@@ -141,7 +141,7 @@ private
    type BST is
       record
          Root       : Tree_Node_Ptr := null;
-         Count      : Natrual       := 0;
+         Count      : Natural       := 0;
          Traversing : Boolean       := False;
       end record ;
 
