@@ -19,24 +19,12 @@
 -- Prioritized_Queue_Type.
 ----------------------------------------------------------------------------
 
-with Dynamic_List_Manager ;
+with Ada.Exceptions ;
 
-generic
-   type Element_Type is private ;
-   type Priority_Type is limited private ;
-   with function Priority(Item : in Element_Type) return Priority_Type ;
-   with function "<"(Left, Right : in Priority_Type) return Boolean ;
-
-package Priority_Queue_Manager is
-
-   type Priority_Queue_Type is limited private ;
-
-   Overflow     :  exception;  -- Rasied when queue space runs out.
-   Underflow    :  exception;  -- Rasied when retrieving from empty queue.
-
+package body Priority_Queue_Manager is
 
    -------------------------------------------------------------------------
-   procedure Enqueue(Item : in Element_Type; Q : in out Priority_Queue_Type) ;
+   procedure Enqueue(Item : in Element_Type; Q : in out Priority_Queue_Type) is
 
    -- Adds items to Queue Q.  The position of the item within the queue
    -- is determined by the item's relative priority to the items already
@@ -45,40 +33,81 @@ package Priority_Queue_Manager is
    -- Exceptions:
    --   Overflow    Item could not be added to Q.
 
+   begin -- Enqueue
+      if LM.Empty(Q.List) then
+         LM.Insert(Item, Q.List) ;
+      else
+         LM.Move(Q.List, LM.At_Start) ;
+         while Priority(Item) < Priority(LM.Current_Item(Q.List)) loop
+            exit when LM.At_End(Q.List) ;
+            LM.Move(Q.List, LM.Forward) ;
+         end loop ;
+         if Priority(Item) < Priority(LM.Current_Item(Q.List)) then
+            LM.Insert(Item, Q.List, LM.After) ;
+         else
+            LM.Insert(Item, Q.List, LM.Before) ;
+         end if ;
+      end if ;
+      LM.Move(Q.List, LM.At_Start) ;
+      exception
+         when LM.Overflow =>
+            LM.Move(Q.List, LM.At_Start) ;
+            Ada.Exceptions.Raise_Exception (Overflow'identity,
+                        "Error using Enqueue.  Not eneough free memory.") ;
+   end Enqueue ;
 
 
    -------------------------------------------------------------------------
-   procedure Dequeue(Item : out Element_Type; Q : in out Priority_Queue_Type) ;
+   procedure Dequeue(Item : out Element_Type; Q : in out Priority_Queue_Type) is
 
    -- Removes items from the front of the queue.
 
    -- Exceptions:
    --   Underflow    Queue is empty.
 
+   begin --Dequeue
+      if LM.Empty(Q.List) then
+         Ada.Exceptions.Raise_Exception (Underflow'identity,
+                     "Error using Dequeue.  Queue is empty.") ;
+      end if ;
+      LM.Move(Q.List, LM.At_Start) ;
+      LM.Remove(Item, Q.List) ;
+   end Dequeue ;
 
 
    -------------------------------------------------------------------------
-   function Front(Q : in Priority_Queue_Type) return Element_Type ;
+   function Front(Q : in Priority_Queue_Type) return Element_Type is
 
-   -- Returns a copy of the item at the front of the queue Q.
+   -- Returns a copy of the item at the front of the queue.
 
    -- Exceptions:
    --   Underflow    Stack is empty.
 
+   begin --Front
+      if LM.Empty(Q.List) then
+         Ada.Exceptions.Raise_Exception (Underflow'identity,
+                     "Error using Front.  Queue is empty.") ;
+      end if ;
+
+      return LM.Current_Item(Q.List) ;
+   end Front ;
 
 
    -------------------------------------------------------------------------
-   function Empty(Q  : in Priority_Queue_Type) return Boolean ;
+   function Empty(Q  : in Priority_Queue_Type) return Boolean is
 
    -- Returns true if the Queue is empty and false otherwise.
 
    -- Exceptions:
    --    None.
 
+   begin -- Empty
+      return LM.Empty(Q.List) ;
+   end Empty ;
 
 
    -------------------------------------------------------------------------
-   function Count(Q  : in Priority_Queue_Type) return Natural ;
+   function Count(Q  : in Priority_Queue_Type) return Natural is
 
    -- Returns the number of items in queue Q.  If the queue is empty,
    -- zero is returned.
@@ -86,10 +115,13 @@ package Priority_Queue_Manager is
    -- Exceptions:
    --    None.
 
+   begin  -- Count
+      return LM.Count(Q.List) ;
+   end Count ;
 
 
    -------------------------------------------------------------------------
-   procedure Clear(Q   : in out Priority_Queue_Type) ;
+   procedure Clear(Q   : in out Priority_Queue_Type) is
 
    -- Removes all items from queue Q.  If the queue is empty, the procedure
    -- does nothing.
@@ -97,10 +129,13 @@ package Priority_Queue_Manager is
    -- Exceptions:
    --    None.
 
+   begin  -- Clear
+      LM.Clear(Q.List) ;
+   end Clear ;
 
 
    -------------------------------------------------------------------------
-   function "="(Left, Right  : in Priority_Queue_Type) return Boolean ;
+   function "="(Left, Right  : in Priority_Queue_Type) return Boolean is
 
    -- Returns true if both queues have the same number of elements in the
    -- same order, and items at the same relative positions are equal.
@@ -109,14 +144,10 @@ package Priority_Queue_Manager is
    -- Exceptions:
    --    None.
 
-private
+   begin -- "="
+      return LM."="(Left.List, Right.List) ;
+   end "=" ;
 
-   package LM is new Dynamic_List_Manager(Element_Type) ;
-
-   type Priority_Queue_Type is
-      record
-         List : aliased LM.List_Type ;
-      end record ;
 
 end Priority_Queue_Manager ;
 
