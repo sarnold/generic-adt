@@ -12,61 +12,81 @@
 -- of a stack is defined by the exported data type Stack_Type.
 ----------------------------------------------------------------------------
 
-with Dynamic_List_Manager ;
+--with Dynamic_List_Manager ;
 
-generic
-   type Element_Type is private ;
-
-package Stack_Manager is
-
-   type Stack_Type is limited private ;
-
-   Overflow     :  exception;  -- Rasied when stack space runs out.
-   Underflow    :  exception;  -- Rasied when retrieving from empty stack.
-
+with Ada.Exceptions ;
+-- with Ada.Unchecked_Deallocation ;
+package body Stack_Manager is
 
    -------------------------------------------------------------------------
-   procedure Push(Item : in Element_Type; S : in out Stack_Type) ;
+   procedure Push(Item : in Element_Type; S : in out Stack_Type) is
 
    -- Adds items to Stack S.
 
    -- Exceptions:
    --   Overflow    Item could not be added to S.
 
+   begin -- Push
+      LM.Move(S.List, LM.At_Start) ;
+      LM.Insert(Item, S.List) ;
+      exception
+         when LM.Overflow =>
+            Ada.Exceptions.Raise_Exception (Overflow'identity,
+                        "Error using Push.  Not eneough free memory.") ;
+   end Push ;
 
 
    -------------------------------------------------------------------------
-   procedure Pop(Item : out Element_Type; S : in out Stack_Type) ;
+   procedure Pop(Item : out Element_Type; S : in out Stack_Type) is
 
    -- Removes items from Stack S.
 
    -- Exceptions:
    --   Underflow    Stack is empty.
 
+   begin --Pop
+      if LM.Empty(S.List) then
+         Ada.Exceptions.Raise_Exception (Underflow'identity,
+                     "Error using Pop.  Stack is empty.") ;
+      end if ;
+      LM.Move(S.List, LM.At_Start) ;
+      LM.Remove(Item, S.List) ;
+   end Pop ;
 
 
    -------------------------------------------------------------------------
-   function Top(S : in Stack_Type) return Element_Type ;
+   function Top(S : in Stack_Type) return Element_Type is
 
    -- Returns a copy of the item at the top of the Stack S.
 
    -- Exceptions:
    --   Underflow    Stack is empty.
 
+   begin --Pop
+      if LM.Empty(S.List) then
+         Ada.Exceptions.Raise_Exception (Underflow'identity,
+                     "Error using Top.  Stack is empty.") ;
+      end if ;
+      LM.Move(S.List, LM.At_Start) ;
+      return LM.Current_Item(S.List) ;
+   end Top ;
 
 
-  -------------------------------------------------------------------------
-   function Empty(S  : in Stack_Type) return Boolean ;
+   -------------------------------------------------------------------------
+   function Empty(S  : in Stack_Type) return Boolean is
 
    -- Returns true if the Stack is empty and false otherwise.
 
    -- Exceptions:
    --    None.
 
+   begin -- Empty
+      return LM.Empty(S.List) ;
+   end Empty ;
 
 
    -------------------------------------------------------------------------
-   function Count(S  : in Stack_Type) return Natural ;
+   function Count(S  : in Stack_Type) return Natural is
 
    -- Returns the number of items in stack S.  If the stack is empty,
    -- zero is returned.
@@ -74,6 +94,9 @@ package Stack_Manager is
    -- Exceptions:
    --    None.
 
+   begin  -- Count
+      return LM.Count(S.List) ;
+   end Count ;
 
 
    -------------------------------------------------------------------------
@@ -88,7 +111,7 @@ package Stack_Manager is
 
 
    -------------------------------------------------------------------------
-   function "="(Left, Right  : in Stack_Type) return Boolean ;
+   function "="(Left, Right  : in Stack_Type) return Boolean is
 
    -- Returns true if both stacks have the same number of elements in the
    -- same order, and items at the same relative positions are equal.
@@ -97,15 +120,5 @@ package Stack_Manager is
    -- Exceptions:
    --    None.
 
-private
-
-   package LM is new Dynamic_List_Manager(Element_Type) ;
-
-   type Stack_Type is
-      record
-         List : LM.List_Type ;
-      end record ;
-
 end Stack_Manager ;
-
 
