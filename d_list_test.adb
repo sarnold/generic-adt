@@ -3,9 +3,9 @@
 -- CS152, Spring 2000
 -- Assignment List Package (Dynamic Memory Allocation Implementation)
 -- Stephen L Arnold
--- package body List_Test
+-- procedure body List_Test
 ----------------------------------------------------------------------------
--- Description: This package tests the list_manager package.
+-- Description: This procedure tests the list_manager package.
 -- 
 -- It tests all procedures and functions, as well as most exceptions.  The
 -- test variables are lists of integers, but other types should also work.
