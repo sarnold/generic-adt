@@ -67,7 +67,7 @@ package body Stack_Manager is
          Ada.Exceptions.Raise_Exception (Underflow'identity,
                      "Error using Top.  Stack is empty.") ;
       end if ;
-      LM.Move(S.List, LM.At_Start) ;
+
       return LM.Current_Item(S.List) ;
    end Top ;
 
@@ -100,7 +100,7 @@ package body Stack_Manager is
 
 
    -------------------------------------------------------------------------
-   procedure Clear(S   : in out Stack_Type) ;
+   procedure Clear(S   : in out Stack_Type) is
 
    -- Removes all items from stack S.  If the stack is empty, the procedure
    -- does nothing.
@@ -108,6 +108,9 @@ package body Stack_Manager is
    -- Exceptions:
    --    None.
 
+   begin  -- Clear
+      LM.Clear(S.List) ;
+   end Clear ;
 
 
    -------------------------------------------------------------------------
@@ -120,5 +123,11 @@ package body Stack_Manager is
    -- Exceptions:
    --    None.
 
+   begin -- "="
+      return LM."="(Left.List, Right.List) ;
+   end "=" ;
+
 end Stack_Manager ;
+
+
 
