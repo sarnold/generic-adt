@@ -3,7 +3,7 @@
 -- CS152, Spring 2000
 -- Assignment List Package (Array Implementation)
 -- Stephen L Arnold
--- generic package specification List_Manager
+-- generic package body List_Manager
 -------------------------------------------------------------
 -- Description: This package provides services to save items in a list.
 -- The items to be saved in the list are defined via the generic type
@@ -11,25 +11,18 @@
 -- the generic constant object Max_Size.  Max_Size is an optional parameter
 -- in the instantiation and defaults to the value shown below.  The
 -- abstraction of a list is defined by the exported data type List_Type.
+--
+-- This version of the package body implements List_Type as a record,
+-- with an array to hold the user data.
 -------------------------------------------------------------
 
-generic
-   type Element_Type is private;
-   Max_Size : in Positive := 1000;
+with Ada.Exceptions;
+package body List_Manager is
    
-package List_Manager is
-   
-   type List_Type is limited private;
-   
-   type Position_Reference is (Before, After, At_Start, At_End);
-   subtype Endpoint is Position_Reference range At_Start..At_End;
-   
-   type Direction is (Forward, Backward);
-   
-   Overflow     : exception;  -- Rasied when list space runs out.
-   Cursor_Error : exception;  -- Rasied for invalid cursor operations.
-   State_Error  : exception;  -- Raised on invalid state change.
-   
+   -- exceptions:
+   --     Overflow             Rasied when list space runs out.
+   --     Cursor_Error     Rasied for invalid cursor operations.
+   --     State_Error       Raised on invalid state change.
    
    ----------------------------------------------------------
    procedure Insert(
@@ -73,56 +66,44 @@ package List_Manager is
    --    State_Error      List is in a traversal.
    
    ----------------------------------------------------------
-   procedure Clear(List   : in out List_Type);
+   procedure Clear(List   : in out List_Type) is
    
    -- Removes all items from the list.  If the list is empty, the procedure
    -- does nothing.
    
-   -- Exceptions:
-   --    State_Error       List is in a traversal.
+   begin  -- Clear
+      if Empty(List) then
+	 return ;
+      elsif Traversing then
+	 Ada.Exceptions.Raise_Exception (State_Error'identity,
+               "Error using Clear.  List is in a traversal.") ;
+      else
+	 List.Count := 0 ;
+      end if ;
+   end Clear ;
    
    ----------------------------------------------------------
-   function Empty(List   : in List_Type) return boolean;
+   function Empty(List   : in List_Type) return Boolean is
    
    -- Returns true if the List is empty and false otherwise.
    
-   -- Exceptions:
-   --    None.
+   begin
+      return List.Count = 0 ;
+   end Empty ;
    
    ----------------------------------------------------------
-   function Count(List   : in List_Type) return natural;
+   function Count(List   : in List_Type) return Natural is
    
    -- Returns the number of items in the List.  If List is empty, zero is
    -- returned.
    
-   -- Exceptions:
-   --    None.
-   
-   ----------------------------------------------------------
-   generic
-      with procedure Process(Item : in out Element_Type; Continue : out boolean);
-   procedure Traverse(List : in out List_Type; Course : in Direction);
-   
-   -- Passive list iterator.  Iteration begins at the cursor position and
-   -- advances in the direction indicated by Course until an endpoint of
-   -- List is reached.  Upon return, the cursor is positioned at an endpoint
-   -- of the list, unless the traversal was terminated early.  Early termination
-   -- of the traversal can be accomplished by setting the Continue parameter
-   -- of the generic formal procedure to false.  The traversal will cease, and
-   -- the cursor is left positioned at whatever item was last processed.
-   -- Unless an early termination of the traversal is desired, the Continue
-   -- parameter should be set to true.  During a traversal, the state of List
-   -- is not allowed to be changed.  A state change is defined to occur when
-   -- items are either inserted or removed from the list, or when an attempt
-   -- is made to adjust the cursor position for the List.  Replacing existing
-   -- items is not considered a state change.  If List is empty, this procedure
-   -- does nothing.
-   
-   -- Exceptions:
-   --     State_Error     List is already in a traversal.
-   --     State_Error     Attempt to change List state in procedure Process.
-   --     Any exceptions raised within procedure Process are propagated.
-   
+   begin  -- Clear
+      if Empty(List) then
+	 return 0 ;
+      else
+	 return List.Count ;
+      end if ;
+   end Count ;
    ----------------------------------------------------------
    procedure Move(
 		  List  : in out List_Type;
@@ -148,6 +129,8 @@ package List_Manager is
    --     Cursor_Error     Cursor is at end of List and Course is Forward.
    --     Cursor_Error     List is empty.
    --     State_Error      List is in a traversal.
+   
+   
    
    ----------------------------------------------------------
    function At_Start(List   : in List_Type) return boolean;
@@ -185,16 +168,29 @@ package List_Manager is
    -- Exceptions:
    --    None.
    
-private
-   type List_Array is array (Positive range <>) of Element_Type;
-   type List_Type is
-      record
-	 Head       : Natural := 0;             -- Index of first element.
-	 Tail       : Natural := 0;             -- Index of last element.
-	 Cursor     : Natural := 0;             -- Index of cursor element.
-	 Count      : Natural := 0;             -- Number of items in list.
-	 Traversing : Boolean := False;         -- True when in a traversal.
-	 List_Data  : List_Array(1..Max_Size);  -- User data.
-      end record;
+   ----------------------------------------------------------
+   procedure Traverse(List : in out List_Type; Course : in Direction);
+   
+   -- Passive list iterator.  Iteration begins at the cursor position and
+   -- advances in the direction indicated by Course until an endpoint of
+   -- List is reached.  Upon return, the cursor is positioned at an endpoint
+   -- of the list, unless the traversal was terminated early.  Early termination
+   -- of the traversal can be accomplished by setting the Continue parameter
+   -- of the generic formal procedure to false.  The traversal will cease, and
+   -- the cursor is left positioned at whatever item was last processed.
+   -- Unless an early termination of the traversal is desired, the Continue
+   -- parameter should be set to true.  During a traversal, the state of List
+   -- is not allowed to be changed.  A state change is defined to occur when
+   -- items are either inserted or removed from the list, or when an attempt
+   -- is made to adjust the cursor position for the List.  Replacing existing
+   -- items is not considered a state change.  If List is empty, this procedure
+   -- does nothing.
+   
+   -- Exceptions:
+   --     State_Error     List is already in a traversal.
+   --     State_Error     Attempt to change List state in procedure Process.
+   --     Any exceptions raised within procedure Process are propagated.
+   
+
 end List_Manager;
 
