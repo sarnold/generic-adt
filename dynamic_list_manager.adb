@@ -96,10 +96,14 @@ package body Dynamic_List_Manager is
    
    begin -- Replace
 
+      if List.Traversing then
    
                         "Error using Replace.  List is already in a traversal.") ;
       
-      if Empty(List) then
+         Ada.Exceptions.Raise_Exception (Cursor_Error'identity,
+	 Ada.Exceptions.Raise_Exception (State_Error'identity,
+			"Error using Replace.  List is already in a traversal.") ;
+         Old_Item := List.Cursor.Data ;
 	 Ada.Exceptions.Raise_Exception (Cursor_Error'identity,
 			 "Error using Replace.  List is empty.") ;
    end Replace;
@@ -165,14 +169,19 @@ package body Dynamic_List_Manager is
 
    begin  -- Clear
    
+         Ada.Exceptions.Raise_Exception (State_Error'identity,
+      
       else
-      if not Empty(List) then
-	 if List.Traversing then
-	    Ada.Exceptions.Raise_Exception (State_Error'identity,
-			    "Error using Clear.  List is in a traversal.") ;
-	 else
-            List := (Count => 0, Traversing => False, others => null) ;
-	 end if ;
+         while (List.Head /= null) loop
+	 Ada.Exceptions.Raise_Exception (State_Error'identity,
+			"Error using Clear.  List is in a traversal.") ;
+            Free(Orphan) ;
+	 while (List.Head /= null) loop
+	    Orphan := List.Head ;
+	    List.Head := List.Head.Next ;
+	    Free(Orphan) ;
+	 end loop ;
+	 List := (Count => 0, Traversing => False, others => null) ;
    function Empty(List   : in List_Type) return Boolean is
 
    
