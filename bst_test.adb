@@ -39,10 +39,6 @@
 
       package BT is new Binary_Search_Tree(Integer, Integer, Identity, "=","<");    use BT;
       package Boolean_IO is new Ada.Text_IO.Enumeration_IO (enum => Boolean);
---       subtype Small_Positive is positive range 1..20;
---       package Random_Numbers is new Ada.Numerics.Discrete_Random(Small_Positive);
---       Gen : Random_Numbers.Generator;
---       n   : Small_Positive;
 
       A, B, C, D : aliased BST;
       m : Integer := 0;
@@ -91,6 +87,7 @@
 
       BT.Insert(Item => 1, Tree => D);
       Put_Line("Beginning traversal exception tests...");
+      New_Line;
       Tr(D'access, In_Order);
       BT.Remove(1, D, m);
       New_Line;
