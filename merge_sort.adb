@@ -37,10 +37,10 @@ Procedure Merge_Sort is
    Filename     : String(1..512);
    Last         : Natural;
    Input        : Integer;
---    Input1       : Integer;
---    Input2       : Integer;
    Input1       : Data_Record;
    Input2       : Data_Record;
+   Done1        : Boolean := false;
+   Done2        : Boolean := false;
    Temp_File1   : File_Type;
    Temp_File2   : File_Type;
    Temp_File3   : File_Type;
@@ -49,6 +49,8 @@ Procedure Merge_Sort is
    Temp_Name3   : DOS8_3;
    Temp_Count   : Natural  := 0;
    Temp_Size    : Positive := 100;
+
+   -- Priority functions for Queue and Tree packages.
 
    function Identity(Element : in Integer) return Integer is
    begin --Identity
@@ -60,12 +62,49 @@ Procedure Merge_Sort is
       return Natural'Value(Filename(Filename'First..Index(Filename, ".")-1));
    end P;
 
+   function P2(Element : in Data_Record) return Integer is
+   begin --P2
+      return Element.Data;
+   end P2;
+
    package BT is new Binary_Search_Tree(Integer, Integer, Identity, "=", "<");  use BT;
-   package Q is new Priority_Queue_Manager(DOS8_3, Natural, P, ">");    use Q;
+   Tree        : aliased BST;
 
-   Tree         : aliased BST;
-   Name_Queue   : Priority_Queue_Type;
+   package Q  is new Priority_Queue_Manager(DOS8_3, Natural, P, ">");           use Q;
+   Name_Queue  : Q.Priority_Queue_Type;
 
+   package DQ is new Priority_Queue_Manager(Data_Record, Integer, P2, ">");     use DQ;
+   DataQ1      : DQ.Priority_Queue_Type;
+   DataQ2      : DQ.Priority_Queue_Type;
+
+   -----------------------------------------------------------------------------------
+   procedure Load(File_Handle      : in     File_Type;
+                            DataQ  : in out DQ.Priority_Queue_Type;
+                            Done   : out    Boolean) is
+
+      -- reads from open file given by file_type and loads given queue with at
+      -- most 10 data_records.  Done flag indicates when file has been read.
+
+      Input : Data_Record;
+
+   begin --Load
+      Done := False;
+      for I in 1..10 loop
+         if End_Of_File(File_Handle) then
+            Done := True;
+         else
+            Get(File_Handle, Input.Data);
+            DQ.Enqueue(Input, DataQ);
+            Skip_Line(File_Handle);
+         end if;
+         exit when End_Of_File(File_Handle);
+      end loop;
+      if End_Of_File(File_Handle) then
+         Done := True;
+      end if;
+   end Load;
+
+   ---------------------------------------------------------------------------------
    procedure Put(I : in Integer; Cont : out Boolean) is
    begin -- Put
       Put(Temp_File1,I,Width => 1);
@@ -75,6 +114,7 @@ Procedure Merge_Sort is
 
    procedure Write_Tree is new Traverse(Put);
 
+---------------------------------------------------------------------------------
 begin --Merge_Sort
 
    Put_Line("You'll need free disk space equal to a little more than twice ");
@@ -131,6 +171,7 @@ begin --Merge_Sort
    end if;
 
    -- Merge the files back together into one big sorted file
+   -- Start by grabbing 2 files off the Name_Queue and creating the output file
    loop
       Dequeue(Temp_Name1, Name_Queue);
       Dequeue(Temp_Name2, Name_Queue);
@@ -138,91 +179,47 @@ begin --Merge_Sort
       Open(Temp_File1, In_File, Temp_Name1);
       Open(Temp_File2, In_File, Temp_Name2);
       Create(Temp_File3, Out_File, Temp_Name3);
-
-      Get(Temp_File1, Input1.Data);
-      Skip_Line(Temp_File1);
-      Get(Temp_File2, Input2.Data);
-      Skip_Line(Temp_File2);
-      loop
-         if Input1.Used then -- get new value from file1
-              Get(Temp_File1, Input1.Data);
-              Input1.Used := False;
-              Skip_Line(Temp_File1);
+      -- Load the intial data into the Data_Queues
+      Load(Temp_File1, DataQ1, Done1);
+      Load(Temp_File2, DataQ2, Done2);
+      loop    -- Loop until both files are done
+         if (DQ.Empty(DataQ1) and not Done1) then
+            Load(Temp_File1, DataQ1, Done1);
          end if;
-         if Input2.Used then -- get new value from file2
-              Get(Temp_File2, Input2.Data);
-              Input2.Used := False;
-              Skip_Line(Temp_File2);
+         if (DQ.Empty(DataQ2) and not Done2) then
+            Load(Temp_File2, DataQ2, Done2);
          end if;
-         if Input1.Data < Input2.Data then
-            Put(Temp_File3, Input1.Data, Width => 1);
-            Input1.Used := True;
-         else
-            Put(Temp_File3, Input2.Data, Width => 1);
-            Input2.Used := True;
-         end if;
-         New_Line(Temp_File3);
-         exit when End_Of_File(Temp_File1) or End_Of_File(Temp_File2);
+         loop   -- Loop through Data_Queues
+            if not (DQ.Empty(DataQ1) and DQ.Empty(DataQ2)) then
+               Input1 := DQ.Front(DataQ1);
+               Input2 := DQ.Front(DataQ2);
+               if Input1.Data < Input2.Data then
+                  DQ.Dequeue(Input1, DataQ1);
+                  Put(Temp_File3, Input1.Data, 1);
+               else
+                  DQ.Dequeue(Input2, DataQ2);
+                  Put(Temp_File3, Input2.Data, 1);
+               end if;
+               New_Line(Temp_File3);
+            end if;
+            exit when DQ.Empty(DataQ1) or DQ.Empty(DataQ2);
+         end loop;  -- Pick up remnants
+            if (Done1) then
+               while not DQ.Empty(DataQ2) loop
+                  DQ.Dequeue(Input2, DataQ2);
+                  Put(Temp_File3, Input2.Data, 1);
+                  New_Line(Temp_File3);
+               end loop;
+            end if;
+            if (Done2) then
+               while not DQ.Empty(DataQ1) loop
+                  DQ.Dequeue(Input1, DataQ1);
+                  Put(Temp_File3, Input1.Data, 1);
+                  New_Line(Temp_File3);
+               end loop;
+            end if;
+         exit when Done1 and then Done2;
       end loop;
-      -- This is really hokey, but I have to compare remaining values against the
-      -- (possible) leftover value.
-      if not End_Of_File(Temp_File2) then
-         if not Input1.Used then
-            loop
-               if Input1.Data < Input2.Data then
-                  Put(Temp_File3, Input1.Data, Width => 1);
-                  Input1.Used := True;
-               else
-                  Put(Temp_File3, Input2.Data, Width => 1);
-                  Input2.Used := True;
-               end if;
-               New_Line(Temp_File3);
-               if not End_Of_File(Temp_File2) then
-                  Get(Temp_File2, Input2.Data);
-                  Input2.Used := False;
-                  Skip_Line(Temp_File2);
-               end if;
-               exit when Input1.Used;
-            end loop;
-         end if;
-         if not End_Of_File(Temp_File2) then
-            while not End_Of_File(Temp_File2) loop
-               Get(Temp_File2, Input2.Data);
-               Skip_Line(Temp_File2);
-               Put(Temp_File3, Input2.Data, Width => 1);
-               New_Line(Temp_File3);
-            end loop;
-         end if;
-         Input2.Used := False;
-      elsif not End_Of_File(Temp_File1) then
-         if not Input2.Used then
-            loop
-               if Input1.Data < Input2.Data then
-                  Put(Temp_File3, Input1.Data, Width => 1);
-                  Input1.Used := True;
-               else
-                  Put(Temp_File3, Input2.Data, Width => 1);
-                  Input2.Used := True;
-               end if;
-               New_Line(Temp_File3);
-               if not End_Of_File(Temp_File1) then
-                  Get(Temp_File1, Input1.Data);
-                  Input1.Used := False;
-                  Skip_Line(Temp_File1);
-               end if;
-               exit when Input2.Used;
-            end loop;
-         end if;
-         if not End_Of_File(Temp_File1) then
-            while not End_Of_File(Temp_File1) loop
-               Get(Temp_File1, Input1.Data);
-               Skip_Line(Temp_File1);
-               Put(Temp_File3, Input1.Data, Width => 1);
-               New_Line(Temp_File3);
-            end loop;
-         end if;
-         Input1.Used := False;
-      end if;
       Enqueue(Temp_Name3, Name_Queue);
       Temp_Count := Natural'Succ(Temp_Count);
       Delete(Temp_File1);
@@ -230,7 +227,6 @@ begin --Merge_Sort
       Close(Temp_File3);
       exit when Q.Count(Name_Queue) = 1;
    end loop;
-
    -- copy final result to output file
    Dequeue(Temp_Name1, Name_Queue);
    Open(Temp_File1, In_File, Temp_Name1);
