@@ -198,9 +198,9 @@ private
 	
    type List_Type is
       record
-	 Head        : Natural := 0 ;         -- Pointer to first element.
-	 Tail        : Natural := 0 ;         -- Pointer to last element.
-	 Cursor      : Natural := 0 ;         -- Pointer to cursor element.
+	 Head        : List_Element_Ptr ;     -- Pointer to first element.
+	 Tail        : List_Element_Ptr ;     -- Pointer to last element.
+	 Cursor      : List_Element_Ptr ;     -- Pointer to cursor element.
 	 Count       : Natural := 0 ;         -- Number of items in list.
 	 Traversing  : Boolean := False ;     -- True when in a traversal.
       end record ;
