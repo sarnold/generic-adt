@@ -2,7 +2,7 @@
 ----------------------------------------------------------------------------
 -- Allan Hancock College
 -- CS152, Spring 2000
--- Assignment Stack Package (Dynamic_List_Manager Implementation)
+-- Assignment Stack & Queue Packages (Dynamic_List_Manager Implementation)
 -- Stephen L Arnold
 -- procedure body Satck_Test
 ----------------------------------------------------------------------------
