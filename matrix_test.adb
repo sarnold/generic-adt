@@ -74,7 +74,6 @@
 
         negC  : Matrix(1..4, 1..3)  :=  (others => (others => 0.0)) ;
         temp  : Matrix(1..3, 1..3)  :=  (others => (others => 0.0)) ;
-        temp1 : Matrix(1..4, 1..3)  :=  (others => (others => 0.0)) ;
 
    -----------------------------------------------------------------------
       procedure Put_Array (Float_array : in Matrix) is
@@ -128,7 +127,7 @@
 
       Put_line("Is C + -C = 0?") ;
       negC := n * C ;
-      if (C + negC) = temp1 then
+      if (C + negC) = temp then
          Put_Line("Yes. Test 1.b passed") ;
       else
          Put_line("No. Test 1.b failed") ;
