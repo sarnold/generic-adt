@@ -130,10 +130,10 @@ package body Dynamic_List_Manager is
                         "Error using Remove.  List is empty.") ;
        elsif List.Traversing then
           Ada.Exceptions.Raise_Exception (State_Error'identity,
-         Ada.Exceptions.Raise_Exception (Cursor_Error'identity,
+                        "Error using Remove.  List is in a traversal.") ;
        end if ;
 
-         Ada.Exceptions.Raise_Exception (State_Error'identity,
+       Item := List.Cursor.Data ;
 
        if List.Count = 1 then
           List := (Count => 0, Traversing => False, others => null) ;
@@ -178,11 +178,7 @@ package body Dynamic_List_Manager is
             Free(Orphan) ;
          end loop ;
          List := (Count => 0, Traversing => False, others => null) ;
-            if List.Count = 1 then
-              List.Head := null ;
-            else
-               List.Head := List.Head.Next ;
-            end if ;
+      end if ;
    end Clear ;
 
    -------------------------------------------------------------------------
