@@ -1,0 +1,44 @@
+V "GNAT Lib v3.12  "
+A -g
+A -gnatq
+P NO
+R nnnvnnnnnnnvvnnnnvnnnnnnnnnvnnnnnnnnvnnn
+
+U stack_manager%s	stack_manager.ads	1FD52493 PK GE
+W ada.exceptions%s	a-except.adb		a-except.ali
+W dynamic_list_manager%s  dynamic_list_manager.adb  dynamic_list_manager.ali
+W system%s		system.ads		system.ali
+
+D ada.ads		19990914131249 2359F9ED
+D a-except.ads		19990914131247 2DA50930
+D a-uncdea.ads		19990914131249 4130DC21
+D dynamic_list_manager.ads  20000327005404 55BF306B
+D dynamic_list_manager.adb  20000330072452 585D7B00
+D stack_manager.ads	20000404042311 4A6A14F8
+D system.ads		19990914131255 14CAFA57
+D s-stalib.ads		19990914131253 7A7199A7
+D unchconv.ads		19990914131255 72DC4539
+X 4 dynamic_list_manager.ads
+18G9*Dynamic_List_Manager 6|15r6 82r22
+20R9 List_Type 6|86r20
+X 6 stack_manager.ads
+18+9 Element_Type 29r29 82r43
+20G9*Stack_Manager
+22R9 Stack_Type 29r54 39r33 50r27 60r27 71r35 84c9
+24X4 Overflow
+25X4 Underflow
+29U14 Push
+29+19 Item
+29R43 S
+39U14 Clear
+39R20 S
+50U13 Empty
+50R19 S
+60U13 Count
+60R19 S
+71U13 "="
+71R17 Left
+71R23 Right
+82U12 LM 86r17
+86R10 List
+
