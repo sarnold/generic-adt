@@ -85,7 +85,7 @@ modified, and then re-inserted. Duplicate keys are not allowed.
  - Procedure Merge_Sort
 
 Description: This program implements a merge sort using the Priority
-Stacks/Queues and Dynamic List Manager packages. It performs a partition
+Queue, BST, and Dynamic List Manager packages. It performs a partition
 (or "chunk") phase, followed by a merge phase, to sort a large disk file.
 
 You can enter an input filename on the command line, or the program
