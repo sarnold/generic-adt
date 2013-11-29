@@ -4,7 +4,7 @@
 -- CS152, Spring 2000
 -- Assignment Stack & Queue Packages (Dynamic_List_Manager Implementation)
 -- Stephen L Arnold
--- procedure body Q_Test
+-- procedure body Queue_Test
 ----------------------------------------------------------------------------
 -- Description: This procedure tests the Queue package.
 --

@@ -1,9 +1,9 @@
 ----------------------------------------------------------------------------
 -- Allan Hancock College
 -- CS152, Spring 2000
--- Assignment List Package (Array Implementation)
+-- Assignment List Package (Doubly Linked List Implementation)
 -- Stephen L Arnold
--- generic package body List_Manager
+-- generic package body Dynamic_List_Manager
 ----------------------------------------------------------------------------
 -- Description: This package provides services to save items in a list.
 -- The items to be saved in the list are defined via the generic type
